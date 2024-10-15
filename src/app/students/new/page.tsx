@@ -1,16 +1,16 @@
-'use client'
+"use client"
 
 import React, { useState } from 'react'
-import { Box, Heading, VStack, FormControl, FormLabel, Input, NumberInput, NumberInputField, Button, SimpleGrid, FormErrorMessage, useToast } from '@chakra-ui/react'
 import { useRouter } from 'next/navigation'
-
-interface FormErrors {
-  name?: string;
-  registrationNumber?: string;
-  major?: string;
-  dob?: string;
-  gpa?: string;
-}
+import {
+  Box,
+  Heading,
+  VStack,
+  useColorModeValue,
+  Text,
+  useToast,
+} from '@chakra-ui/react'
+import { StudentForm } from '@/app/components/StudentForm'
 
 export default function AddStudent() {
   const router = useRouter()
@@ -20,43 +20,23 @@ export default function AddStudent() {
     registrationNumber: '',
     major: '',
     dob: '',
-    gpa: ''
+    gpa: 0,
   })
-  const [errors, setErrors] = useState<FormErrors>({})
+
+  const bgColor = useColorModeValue('white', 'gray.800')
+  const textColor = useColorModeValue('gray.700', 'gray.300')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setStudent(prev => ({ ...prev, [name]: value }))
-    // Clear error when user starts typing
-    setErrors(prev => ({ ...prev, [name]: undefined }))
   }
 
   const handleGPAChange = (value: string) => {
-    setStudent(prev => ({ ...prev, gpa: value }))
-    // Clear error when user changes GPA
-    setErrors(prev => ({ ...prev, gpa: undefined }))
-  }
-
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {}
-    if (!student.name) newErrors.name = 'Name is required'
-    if (!student.registrationNumber) newErrors.registrationNumber = 'Registration Number is required'
-    if (!student.major) newErrors.major = 'Major is required'
-    if (!student.dob) newErrors.dob = 'Date of Birth is required'
-    if (!student.gpa) {
-      newErrors.gpa = 'GPA is required'
-    } else {
-      const gpa = parseFloat(student.gpa)
-      if (isNaN(gpa) || gpa < 0 || gpa > 4) newErrors.gpa = 'GPA must be between 0 and 4'
-    }
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    setStudent(prev => ({ ...prev, gpa: parseFloat(value) }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!validateForm()) return
-
     try {
       const response = await fetch('/api/students', {
         method: 'POST',
@@ -65,20 +45,20 @@ export default function AddStudent() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to add student')
+        throw new Error('Failed to add student')
       }
 
-      toast({
-        title: 'Student added successfully',
+      toast({ 
+        title: 'Success',
+        description: 'Student added successfully',
         status: 'success',
-        duration: 3000,
-        isClosable: true,
+          duration: 3000,
+          isClosable: true,
       })
       router.push('/students')
     } catch (error) {
       toast({
-        title: 'Error adding student',
+        title: 'Error',
         description: error instanceof Error ? error.message : 'An unexpected error occurred',
         status: 'error',
         duration: 5000,
@@ -88,43 +68,25 @@ export default function AddStudent() {
   }
 
   return (
-    <VStack spacing={8} align="stretch">
-      <Heading as="h1" size="xl">Add New Student</Heading>
-      <Box as="form" onSubmit={handleSubmit}>
-        <SimpleGrid columns={[1, null, 2]} spacing={6}>
-          <FormControl isRequired isInvalid={!!errors.name}>
-            <FormLabel>Name</FormLabel>
-            <Input name="name" value={student.name} onChange={handleChange} />
-            <FormErrorMessage>{errors.name}</FormErrorMessage>
-          </FormControl>
-          <FormControl isRequired isInvalid={!!errors.registrationNumber}>
-            <FormLabel>Registration Number</FormLabel>
-            <Input name="registrationNumber" value={student.registrationNumber} onChange={handleChange} />
-            <FormErrorMessage>{errors.registrationNumber}</FormErrorMessage>
-          </FormControl>
-          <FormControl isRequired isInvalid={!!errors.major}>
-            <FormLabel>Major</FormLabel>
-            <Input name="major" value={student.major} onChange={handleChange} />
-            <FormErrorMessage>{errors.major}</FormErrorMessage>
-          </FormControl>
-          <FormControl isRequired isInvalid={!!errors.dob}>
-            <FormLabel>Date of Birth</FormLabel>
-            <Input name="dob" type="date" value={student.dob} onChange={handleChange} />
-            <FormErrorMessage>{errors.dob}</FormErrorMessage>
-          </FormControl>
-          <FormControl isRequired isInvalid={!!errors.gpa}>
-            <FormLabel>GPA</FormLabel>
-            <NumberInput min={0} max={4} step={0.1} value={student.gpa} onChange={handleGPAChange}>
-              <NumberInputField name="gpa" />
-            </NumberInput>
-            <FormErrorMessage>{errors.gpa}</FormErrorMessage>
-          </FormControl>
-        </SimpleGrid>
-        <Box mt={8}>
-          <Button type="submit" colorScheme="blue" mr={4}>Add Student</Button>
-          <Button variant="outline" onClick={() => router.push('/students')}>Cancel</Button>
+    <Box bg={bgColor} minH="100vh" p={8} className="dark:bg-gray-900">
+      <VStack spacing={8} align="stretch" maxW="3xl" mx="auto">
+        <Box>
+          <Heading as="h1" size="2xl" mb={2} className="text-gray-900 dark:text-gray-100">
+            Add New Student
+          </Heading>
+          <Text color={textColor}>
+            Enter the student's information to add them to the system. All fields are required.
+          </Text>
         </Box>
-      </Box>
-    </VStack>
+
+        <StudentForm
+          student={student}
+          handleChange={handleChange}
+          handleGPAChange={handleGPAChange}
+          handleSubmit={handleSubmit}
+          handleCancel={() => router.push('/students')}
+        />
+      </VStack>
+    </Box>
   )
 }

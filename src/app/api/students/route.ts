@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/app/lib/db";
 
-export async function getAllStudents(request: NextRequest) {
-	const students = db.students.getAll();
-	return NextResponse.json(students, { status: 200 });
-}
 
-export async function searchStudents(request: NextRequest) {
+
+export async function GET	(request: NextRequest) {
 	const { searchParams } = new URL(request.url);
 	const searchTerm = searchParams.get("search");
 	const searchCategory = searchParams.get("category") as
@@ -19,11 +16,12 @@ export async function searchStudents(request: NextRequest) {
 		const students = db.students.search(searchTerm, searchCategory);
 		return NextResponse.json(students);
 	} else {
-		return NextResponse.json({ error: "Invalid search parameters" }, { status: 400 });
+		 const students = db.students.getAll();
+		return NextResponse.json(students, { status: 200 });
 	}
 }
 
-export async function createNewStudent(request: NextRequest) {
+export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
 
