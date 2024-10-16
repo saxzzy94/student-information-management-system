@@ -43,11 +43,6 @@ export default function Navbar() {
                 Students
               </Button>
             </NextLink>
-            <NextLink href="/courses" passHref>
-              <Button as="span" variant="ghost">
-                Courses
-              </Button>
-            </NextLink>
             <Button onClick={toggleColorMode} variant="ghost">
               {colorMode === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </Button>

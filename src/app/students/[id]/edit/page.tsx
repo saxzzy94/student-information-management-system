@@ -69,19 +69,21 @@ export default function EditStudent({ params }: { params: { id: string } }) {
 	const textColor = useColorModeValue("gray.700", "gray.300");
 
 	useEffect(() => {
-		const fetchedStudent = getStudentById(params.id);
-		if (fetchedStudent) {
-			setStudent(fetchedStudent);
-		} else {
-			toast({
-				title: "Student not found",
-				status: "error",
-				duration: 3000,
+		fetch(`/api/students/${params.id}`)
+			.then((res) => res.json())
+			.then((data) => {
+				setStudent(data);
+			})
+			.catch((error) => {
+				toast({
+					title: "Student not found",
+					status: "error",
+					duration: 3000,
 				isClosable: true,
 			});
 			router.push("/students");
-		}
-	}, [params.id, router, toast]);
+		});
+	}, []);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
@@ -94,15 +96,20 @@ export default function EditStudent({ params }: { params: { id: string } }) {
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		// Here you would typically send a PUT request to your API
-		console.log("Updating student:", student);
-		// For now, we'll just log the student and redirect
-		toast({
-			title: "Student updated successfully",
-			status: "success",
-			duration: 3000,
-			isClosable: true,
+		fetch(`/api/students/${params.id}`, {
+			method: "PUT",
+			body: JSON.stringify(student),
+		}).then((res) => {
+			if (res.ok) {
+				toast({
+					title: "Student updated successfully",
+					status: "success",
+					duration: 3000,
+					isClosable: true,
+				});
+			}
 		});
+		
 		router.push(`/students/${params.id}`);
 	};
 
