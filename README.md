@@ -17,7 +17,7 @@ This project is a Student Information Management System built with Next.js 13, T
 
 ## Tech Stack
 
-- Next.js 13 (App Router)
+- Next.js 14 (App Router)
 - TypeScript
 - Chakra UI
 - React
